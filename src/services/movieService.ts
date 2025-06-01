@@ -1,5 +1,6 @@
+
 import axios, { AxiosResponse } from 'axios';
-import { Movie } from '../types/movie';
+import { FetchMoviesResponse } from '../types/movie';
 
 const BASE_URL = 'https://api.themoviedb.org/3';
 
@@ -10,15 +11,12 @@ const axiosInstance = axios.create({
   },
 });
 
-interface FetchMoviesResponse {
-  results: Movie[];
-}
-
-export const fetchMovies = async (query: string): Promise<Movie[]> => {
+export const fetchMovies = async (
+  query: string,
+  page: number = 1
+): Promise<FetchMoviesResponse> => {
   const response: AxiosResponse<FetchMoviesResponse> = await axiosInstance.get('/search/movie', {
-    params: {
-      query,
-    },
+    params: { query, page },
   });
-  return response.data.results;
+  return response.data;
 };
