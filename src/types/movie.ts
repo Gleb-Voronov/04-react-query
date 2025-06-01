@@ -4,7 +4,8 @@ export interface Movie {
   overview: string;
   poster_path: string | null;
   release_date: string;
-
+  backdrop_path: string;      
+  vote_average: number;  
 }
 
 export interface FetchMoviesResponse {
