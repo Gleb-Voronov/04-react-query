@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast, Toaster } from 'react-hot-toast';
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import ReactPaginate from 'react-paginate';
 
 import styles from './App.module.css';
@@ -18,16 +18,17 @@ const App = () => {
   const [page, setPage] = useState(1);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
- 
-  const queryOptions: UseQueryOptions<FetchMoviesResponse, Error> = {
+  const {
+    data,
+    isPending,
+    isError,
+    isSuccess,
+  } = useQuery<FetchMoviesResponse, Error, FetchMoviesResponse, [string, string, number]>({
     queryKey: ['movies', query, page],
     queryFn: () => fetchMovies(query, page),
     enabled: !!query,
-    
-  };
-
-  const { data, isLoading, isError, isFetching } = useQuery(queryOptions);
-
+    placeholderData: (prev) => prev, 
+  });
 
   useEffect(() => {
     if (data && Array.isArray(data.results) && data.results.length === 0) {
@@ -36,7 +37,7 @@ const App = () => {
   }, [data]);
 
   const handleSearch = (searchQuery: string) => {
-    if (searchQuery === query) return; 
+    if (searchQuery === query) return;
     setQuery(searchQuery);
     setPage(1);
   };
@@ -52,12 +53,14 @@ const App = () => {
     <div className={styles.app}>
       <Toaster position="top-right" reverseOrder={false} />
       <SearchBar onSubmit={handleSearch} />
+      {query && isPending && <Loader />}
       {isError && <ErrorMessage />}
-      {(isLoading || isFetching) && <Loader />}
-      {hasMovies && <MovieGrid movies={data!.results} onSelect={setSelectedMovie} />}
-      {hasPagination && (
+      {isSuccess && hasMovies && (
+        <MovieGrid movies={data.results} onSelect={setSelectedMovie} />
+      )}
+      {isSuccess && hasPagination && (
         <ReactPaginate
-          pageCount={data!.total_pages}
+          pageCount={data.total_pages}
           pageRangeDisplayed={5}
           marginPagesDisplayed={1}
           onPageChange={handlePageChange}
